@@ -434,9 +434,10 @@ public class TellerWritePlatformServiceJpaImpl implements TellerWritePlatformSer
             this.glJournalEntryRepository.saveAndFlush(creditJournalEntry);
 
             return new CommandProcessingResultBuilder() //
-                    .withCommandId(command.commandId()) //
+                    .withCommandId(command.commandId()) // 
                     .withEntityId(cashier.getId()) //
                     .withSubEntityId(cashierTxn.getId()) //
+					.withOfficeId(cashier.getOffice().getId()) // //Yves FOPA 02 Nov 2025
                     .build();
         } catch (final JpaSystemException | DataIntegrityViolationException dve) {
             handleTellerDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
