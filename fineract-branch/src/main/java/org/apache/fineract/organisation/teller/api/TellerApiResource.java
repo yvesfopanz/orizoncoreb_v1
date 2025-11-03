@@ -59,9 +59,12 @@ import org.apache.fineract.organisation.teller.domain.model.CashiersForTeller;
 import org.apache.fineract.organisation.teller.domain.model.request.CashierRequest;
 import org.apache.fineract.organisation.teller.domain.model.request.CashierTransactionRequest;
 import org.apache.fineract.organisation.teller.domain.model.request.TellerRequest;
+import org.apache.fineract.organisation.teller.exception.CashierNotFoundException;
 import org.apache.fineract.organisation.teller.service.TellerManagementReadPlatformService;
 import org.apache.fineract.organisation.teller.util.DateRange;
 import org.springframework.stereotype.Component;
+import org.apache.fineract.organisation.teller.domain.Cashier;
+import org.apache.fineract.organisation.teller.domain.CashierRepository;
 
 @Path("/v1/tellers")
 @Component
@@ -72,6 +75,7 @@ public class TellerApiResource {
     private final TellerManagementReadPlatformService readPlatformService;
     private final PortfolioCommandSourceWritePlatformService commandWritePlatformService;
     private final DefaultToApiJsonSerializer<String> apiJsonSerializer;
+    private final CashierRepository cashierRepository;
 
     @GET
     @Consumes({ MediaType.TEXT_HTML, MediaType.APPLICATION_JSON })
@@ -243,7 +247,12 @@ public class TellerApiResource {
     public CommandProcessingResult allocateCashToCashier(@PathParam("tellerId") @Parameter(description = "tellerId") final Long tellerId,
             @PathParam("cashierId") @Parameter(description = "cashierId") final Long cashierId,
             @Parameter(hidden = true) CashierTransactionRequest cashierTxnData) {
-        final CommandWrapper request = new CommandWrapperBuilder().allocateCashToCashier(tellerId, cashierId)
+
+                //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
+                final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
+                final Long officeId = cashier.getOffice().getId();
+
+        final CommandWrapper request = new CommandWrapperBuilder().allocateCashToCashier(tellerId, cashierId, officeId)
                 .withJson(apiJsonSerializer.serialize(cashierTxnData)).build();
 
         return this.commandWritePlatformService.logCommandSource(request);

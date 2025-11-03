@@ -437,8 +437,7 @@ public class TellerWritePlatformServiceJpaImpl implements TellerWritePlatformSer
                     .withCommandId(command.commandId()) // 
                     .withEntityId(cashier.getId()) //
                     .withSubEntityId(cashierTxn.getId()) //
-					.withOfficeId(cashier.getOffice().getId()) // //Yves FOPA 02 Nov 2025
-                    .build();
+	                .build();
         } catch (final JpaSystemException | DataIntegrityViolationException dve) {
             handleTellerDataIntegrityIssues(command, dve.getMostSpecificCause(), dve);
             return CommandProcessingResult.empty();

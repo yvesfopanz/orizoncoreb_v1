@@ -34,6 +34,7 @@ import org.apache.fineract.portfolio.savings.DepositsApiConstants;
 import org.apache.fineract.portfolio.self.pockets.api.PocketApiConstants;
 import org.apache.fineract.useradministration.api.PasswordPreferencesApiConstants;
 
+
 public class CommandWrapperBuilder {
 
     private Long officeId;
@@ -2837,11 +2838,13 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder allocateCashToCashier(final Long tellerId, final Long cashierId) {
+    public CommandWrapperBuilder allocateCashToCashier(final Long tellerId, final Long cashierId, final Long officeId) {
+
         this.actionName = "ALLOCATECASHTOCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
         this.subentityId = cashierId;
+        this.officeId =  officeId; //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/allocate";
         return this;
     }
