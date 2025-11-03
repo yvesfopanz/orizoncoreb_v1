@@ -41,6 +41,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
@@ -66,8 +68,10 @@ import org.springframework.stereotype.Component;
 import org.apache.fineract.organisation.teller.domain.Cashier;
 import org.apache.fineract.organisation.teller.domain.CashierRepository;
 
+
 @Path("/v1/tellers")
 @Component
+@Slf4j
 @Tag(name = "Teller Cash Management", description = "Teller cash management which will allow an organization to manage their cash transactions at branches or head office more effectively.")
 @RequiredArgsConstructor
 public class TellerApiResource {
@@ -250,7 +254,8 @@ public class TellerApiResource {
 
                 //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
                 final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
-                final Long officeId = cashier.getOffice().getId();
+                log.debug("WithdrawORIZON {}", cashier);
+                final Long officeId = cashier.getStaff().officeId();
 
         final CommandWrapper request = new CommandWrapperBuilder().allocateCashToCashier(tellerId, cashierId, officeId)
                 .withJson(apiJsonSerializer.serialize(cashierTxnData)).build();
