@@ -256,8 +256,9 @@ public class TellerApiResource {
                 final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
                 log.debug("WithdrawORIZON {}", cashier);
                 final Long officeId = cashier.getStaff().officeId();
+                final Long checkerId = cashier.getStaff().getId();
 
-        final CommandWrapper request = new CommandWrapperBuilder().allocateCashToCashier(tellerId, cashierId, officeId)
+        final CommandWrapper request = new CommandWrapperBuilder().allocateCashToCashier(tellerId, cashierId, officeId, checkerId)
                 .withJson(apiJsonSerializer.serialize(cashierTxnData)).build();
 
         return this.commandWritePlatformService.logCommandSource(request);

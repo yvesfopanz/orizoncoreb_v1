@@ -45,6 +45,7 @@ public final class AuditData implements Serializable {
     private final String checker;
     private final ZonedDateTime checkedOnDate;
     private final String processingResult;
+    //private final Long creditBureauId; //Yves FOPA 04/11/2025
     @Setter
     private String commandAsJson;
     private final String officeName;
@@ -57,4 +58,5 @@ public final class AuditData implements Serializable {
     private final Long loanId;
     private final String url;
     private final String ip;
+    private final Long creditBureauId; //Yves FOPA 04/11/2025
 }

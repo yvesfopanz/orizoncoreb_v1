@@ -52,7 +52,7 @@ public class CommandWrapperBuilder {
     private Long productId;
     private Long templateId;
     private Long creditBureauId;
-    private Long organisationCreditBureauId;
+    private Long organisationCreditBureauId; 
     private String jobName;
     private String idempotencyKey;
     private ExternalId loanExternalId;
@@ -2838,13 +2838,14 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder allocateCashToCashier(final Long tellerId, final Long cashierId, final Long officeId) {
+    public CommandWrapperBuilder allocateCashToCashier(final Long tellerId, final Long cashierId, final Long officeId, final Long checkerId) {
 
         this.actionName = "ALLOCATECASHTOCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
         this.subentityId = cashierId;
         this.officeId =  officeId; //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
+        this.creditBureauId = checkerId; //Yves FOPA - 04/11/2025 - !!QUICK and Dirty!!, I'm using this field to store cashier checker who is supposed to approve this ALLOCATECASHTOCASHIER, !! Do this properly later, we will think about
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/allocate";
         return this;
     }

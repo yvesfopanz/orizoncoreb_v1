@@ -146,6 +146,7 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
             final String processingResult = rs.getString("processingResult");
             final String resourceGetUrl = rs.getString("resourceGetUrl");
             String commandAsJson;
+            final Long creditBureauId = JdbcSupport.getLong(rs, "creditBureauId"); //Yves FOPA 04/11/2025
             // commandAsJson might not be on the select list of columns
             try {
                 commandAsJson = rs.getString("commandAsJson");
@@ -166,7 +167,7 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
 
             return new AuditData(id, actionName, entityName, resourceId, subresourceId, maker, madeOnDate, checker, checkedOnDate,
                     processingResult, commandAsJson, officeName, groupLevelName, groupName, clientName, loanAccountNo, savingsAccountNo,
-                    clientId, loanId, resourceGetUrl, ip);
+                    clientId, loanId, resourceGetUrl, ip, creditBureauId);
         }
     }
 
@@ -259,8 +260,25 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
 
         final AuditData auditResult = this.jdbcTemplate.queryForObject(sql, rm, auditId); // NOSONAR
 
-        return replaceIdsOnAuditData(auditResult);
+        return replaceIdsOnAuditData(auditResult); 
     }
+
+    //Yves FOPA 04 nov 2025
+     @Override
+    public AuditData getAuditEntry(final Long auditId) {
+
+    final AppUser currentUser = this.context.authenticatedUser();
+    final String hierarchy = currentUser.getOffice().getHierarchy();
+
+    final AuditMapper rm = new AuditMapper();
+
+    final String sql = "select " + rm.schema(true, hierarchy) + " where aud.id = ? ";
+
+    final AuditData auditResult = this.jdbcTemplate.queryForObject(sql, rm, auditId); // NOSONAR
+
+    return auditResult; 
+   }
+
 
     private AuditData replaceIdsOnAuditData(final AuditData auditResult) {
 

@@ -37,6 +37,9 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
+
+import static org.mockito.ArgumentMatchers.anyBoolean;
+
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -49,8 +52,11 @@ import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
 import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
+import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.infrastructure.security.utils.SQLBuilder;
 import org.springframework.stereotype.Component;
+import org.apache.fineract.useradministration.exception.RoleNotFoundException;
+
 
 @Path("/v1/makercheckers")
 @Component
@@ -64,6 +70,7 @@ public class MakercheckersApiResource {
     private final AuditReadPlatformService readPlatformService;
     private final ApiRequestParameterHelper apiRequestParameterHelper;
     private final PortfolioCommandSourceWritePlatformService writePlatformService;
+    private final PlatformSecurityContext context;
 
     @GET
     @Consumes({ MediaType.APPLICATION_JSON })
@@ -100,6 +107,17 @@ public class MakercheckersApiResource {
     public CommandProcessingResult approveMakerCheckerEntry(@PathParam("auditId") @Parameter(description = "auditId") final Long auditId,
             @QueryParam("command") @Parameter(description = "command") final String commandParam) {
 
+        //Yves FOPA 04/11/2025. for 'ALLOCATECASHTOCASHIER' action, checker should be the particular cashier receiving the cash
+        AuditData auditdata = readPlatformService.getAuditEntry(auditId);
+        if(auditdata.getActionName().equals("ALLOCATECASHTOCASHIER")){
+        
+            //Yves FOPA 04/11/2025 - remember, I'm using creditBureadId field just as QUICK and DIRTY solution to store designated cashier to validate (checker) the 'ALLOCATECASHTOCASHIER' action
+        if(auditdata.getCreditBureauId() != this.context.authenticatedUser().getStaff().getId()){
+            throw new RoleNotFoundException();         
+            } 
+        }
+        //end of Yves FOPA code
+          
         CommandProcessingResult result = null;
         if (is(commandParam, COMMAND_APPROVE)) {
             result = writePlatformService.approveEntry(auditId);

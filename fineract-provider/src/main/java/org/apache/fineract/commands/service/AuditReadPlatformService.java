@@ -36,4 +36,6 @@ public interface AuditReadPlatformService {
     AuditData retrieveAuditEntry(Long auditId);
 
     AuditSearchData retrieveSearchTemplate(String useType);
+
+    AuditData getAuditEntry(Long auditId); //Yves FOPA 04 nov 2025
 }
