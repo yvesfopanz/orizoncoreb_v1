@@ -276,7 +276,14 @@ public class TellerApiResource {
     public CommandProcessingResult settleCashFromCashier(@PathParam("tellerId") @Parameter(description = "tellerId") final Long tellerId,
             @PathParam("cashierId") @Parameter(description = "cashierId") final Long cashierId,
             @Parameter(hidden = true) CashierTransactionRequest cashierTxnData) {
-        final CommandWrapper request = new CommandWrapperBuilder().settleCashFromCashier(tellerId, cashierId)
+
+                //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
+                final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
+                log.debug("WithdrawORIZON {}", cashier);
+                final Long officeId = cashier.getStaff().officeId();
+                final Long checkerId = cashier.getStaff().getId();
+
+        final CommandWrapper request = new CommandWrapperBuilder().settleCashFromCashier(tellerId, cashierId, officeId, checkerId)
                 .withJson(apiJsonSerializer.serialize(cashierTxnData)).build();
 
         return this.commandWritePlatformService.logCommandSource(request);

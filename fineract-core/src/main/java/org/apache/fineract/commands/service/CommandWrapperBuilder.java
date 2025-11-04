@@ -2850,11 +2850,13 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder settleCashFromCashier(final Long tellerId, final Long cashierId) {
+    public CommandWrapperBuilder settleCashFromCashier(final Long tellerId, final Long cashierId, final Long officeId, final Long checkerId) {
         this.actionName = "SETTLECASHFROMCASHIER";
         this.entityName = "TELLER";
         this.entityId = tellerId;
         this.subentityId = cashierId;
+        this.officeId =  officeId; //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
+        this.creditBureauId = checkerId; //Yves FOPA - 04/11/2025 - !!QUICK and Dirty!!, I'm using this field to store cashier checker who is supposed to approve this ALLOCATECASHTOCASHIER, !! Do this properly later, we will think about
         this.href = "/tellers/" + tellerId + "/cashiers/" + cashierId + "/settle";
         return this;
     }

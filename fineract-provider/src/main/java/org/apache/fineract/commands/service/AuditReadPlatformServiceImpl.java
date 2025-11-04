@@ -107,7 +107,7 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
             String partSql = " aud.id as id, aud.action_name as actionName, aud.entity_name as entityName,"
                     + " aud.resource_id as resourceId, aud.subresource_id as subresourceId,aud.client_id as clientId, aud.loan_id as loanId,"
                     + " mk.username as maker, aud.made_on_date as madeOnDate, aud.made_on_date_utc as madeOnDateUTC, aud.api_get_url as resourceGetUrl, "
-                    + "ck.username as checker, aud.checked_on_date as checkedOnDate, aud.checked_on_date_utc as checkedOnDateUTC,  ev.enum_message_property as processingResult "
+                    + "ck.username as checker, aud.checked_on_date as checkedOnDate, aud.checked_on_date_utc as checkedOnDateUTC,  ev.enum_message_property as processingResult, aud.creditbureau_id as creditbureauId "
                     + commandAsJsonString + ", "
                     + " o.name as officeName, gl.level_name as groupLevelName, g.display_name as groupName, c.display_name as clientName, "
                     + " l.account_no as loanAccountNo, s.account_no as savingsAccountNo , aud.client_ip  as ip "
@@ -146,7 +146,7 @@ public class AuditReadPlatformServiceImpl implements AuditReadPlatformService {
             final String processingResult = rs.getString("processingResult");
             final String resourceGetUrl = rs.getString("resourceGetUrl");
             String commandAsJson;
-            final Long creditBureauId = JdbcSupport.getLong(rs, "creditBureauId"); //Yves FOPA 04/11/2025
+            final Long creditBureauId = JdbcSupport.getLong(rs, "creditbureauId"); //Yves FOPA 04/11/2025
             // commandAsJson might not be on the select list of columns
             try {
                 commandAsJson = rs.getString("commandAsJson");
