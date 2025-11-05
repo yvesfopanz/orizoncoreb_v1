@@ -38,8 +38,8 @@ public class RoleNotFoundException extends AbstractPlatformResourceNotFoundExcep
         super("error.msg.role.id.invalid", "Role with identifier " + id + " does not exist", id, e);
     }
 
-    //Yves FOPA 04/112025, quick , to implement checker not allowed exception for 'ALLOCATECASHTOCASHIER' action
+    /* //Yves FOPA 04/112025, quick , to implement checker not allowed exception for 'ALLOCATECASHTOCASHIER' action
     public RoleNotFoundException() {
-        super("error.msg.role.id.invalid", "You are not allowed to validate this task");
-    }
+        super("error.msg.role.id.notallowed", "You are not allowed to validate this task");
+    } */
 }

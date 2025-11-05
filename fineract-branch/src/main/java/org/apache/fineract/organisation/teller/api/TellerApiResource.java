@@ -254,7 +254,7 @@ public class TellerApiResource {
 
                 //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
                 final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
-                log.debug("WithdrawORIZON {}", cashier);
+                log.debug("ORIZON {}", cashier);
                 final Long officeId = cashier.getStaff().officeId();
                 final Long checkerId = cashier.getStaff().getId();
 
@@ -277,9 +277,9 @@ public class TellerApiResource {
             @PathParam("cashierId") @Parameter(description = "cashierId") final Long cashierId,
             @Parameter(hidden = true) CashierTransactionRequest cashierTxnData) {
 
-                //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
+                //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'SETTLECASHFROMCASHIER' in m_portfolio_command_source table 
                 final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
-                log.debug("WithdrawORIZON {}", cashier);
+                log.debug("ORIZON {}", cashier);
                 final Long officeId = cashier.getStaff().officeId();
                 final Long checkerId = cashier.getStaff().getId();
 
