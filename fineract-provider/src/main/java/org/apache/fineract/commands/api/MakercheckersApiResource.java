@@ -55,7 +55,7 @@ import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSeria
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.infrastructure.security.utils.SQLBuilder;
 import org.springframework.stereotype.Component;
-import org.apache.fineract.useradministration.exception.CheckerNotAllowedException;
+import org.apache.fineract.organisation.teller.exception.CheckerNotAllowedException;
 
 
 @Path("/v1/makercheckers")
@@ -113,7 +113,7 @@ public class MakercheckersApiResource {
         
             //Yves FOPA 04/11/2025 - remember, I'm using creditBureadId field just as QUICK and DIRTY solution to store designated cashier to validate (checker) the 'ALLOCATECASHTOCASHIER' action
         if(auditdata.getCreditBureauId() != this.context.authenticatedUser().getStaff().getId()){
-            throw new CheckerNotAllowedException("You are not allowed to validate this request");         
+            throw new CheckerNotAllowedException();         
             } 
         }
         //end of Yves FOPA code

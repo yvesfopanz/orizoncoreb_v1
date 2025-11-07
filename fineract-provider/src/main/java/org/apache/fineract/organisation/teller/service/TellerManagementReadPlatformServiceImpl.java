@@ -56,6 +56,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.CollectionUtils;
 
+import org.apache.fineract.organisation.teller.service.TellerManagementReadPlatformService;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RequiredArgsConstructor
 public class TellerManagementReadPlatformServiceImpl implements TellerManagementReadPlatformService {
 
@@ -67,6 +71,9 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
     private final DatabaseSpecificSQLGenerator sqlGenerator;
     private final PaginationHelper paginationHelper;
     private final SqlValidator sqlValidator;
+
+    
+    private final TellerManagementReadPlatformService readPlatformService;
 
     private static final class TellerMapper implements RowMapper<TellerData> {
 
@@ -268,7 +275,7 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
 
     @Override
     public CashierTransactionsWithSummaryData retrieveCashierTransactionsWithSummary(final Long cashierId, final boolean includeAllTellers,
-            final LocalDate fromDate, final LocalDate toDate, final String currencyCode, final SearchParameters searchParameters) {
+            final LocalDate fromDate, final LocalDate toDate, final String currencyCode, final SearchParameters searchParameters, final Long tellerId) {
 
         sqlValidator.validate(searchParameters.getOrderBy());
         sqlValidator.validate(searchParameters.getSortOrder());
@@ -299,7 +306,28 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
                 }
             }
         }
+        /* Implemented logic
+        //vault balance
+        get all cashiers for a teller
+        for each cashier, get alloc and settle
+        do total settle - total alloc to have vault balance
+        */ 
+        final Collection<CashierData> cashiers = this.readPlatformService.getCashiersForTeller(tellerId, fromDate, toDate);
 
+        BigDecimal mainvaultbalance = new BigDecimal(0);
+        BigDecimal totalcashalloc = new BigDecimal(0);
+        BigDecimal totalcashsettle = new BigDecimal(0);
+
+        for (CashierData cashier : cashiers) {
+            BigDecimal[] amounts = retrieveCashierTransactionsAllocationSettle(cashier.getId(), includeAllTellers,
+            fromDate, toDate, currencyCode, searchParameters);
+            totalcashalloc = totalcashalloc.add(amounts[0]);
+            totalcashsettle = totalcashsettle.add(amounts[1]);
+        }
+        mainvaultbalance = totalcashsettle.subtract(totalcashalloc);
+        log.debug("ORIZON Teller Main Vaul Balance", mainvaultbalance);
+        //end of Yves FOPA changes
+        
         final Page<CashierTransactionData> cashierTransactions = retrieveCashierTransactions(cashierId, includeAllTellers, fromDate, toDate,
                 currencyCode, searchParameters);
 
@@ -310,6 +338,39 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
                 cashierTxnTemplate.getTellerName(), cashierTxnTemplate.getCashierId(), cashierTxnTemplate.getCashierName());
         return txnsWithSummary;
     }
+
+        //Yves FOPA - 07/11/2025 
+        //use this function to retrieve Cash Allocation and Settle total for each cashier for a given teller
+        public BigDecimal[] retrieveCashierTransactionsAllocationSettle(final Long cashierId, final boolean includeAllTellers,
+            final LocalDate fromDate, final LocalDate toDate, final String currencyCode, final SearchParameters searchParameters) {
+
+        sqlValidator.validate(searchParameters.getOrderBy());
+        sqlValidator.validate(searchParameters.getSortOrder());
+        final String nextDay = sqlGenerator.incrementDateByOneDay("c.end_date");
+
+        final CashierTransactionSummaryMapper ctsm = new CashierTransactionSummaryMapper();
+        final String sql = "SELECT " + ctsm.cashierTxnSummarySchema(nextDay) + " LIMIT 1000";
+        Collection<CashierTransactionTypeTotalsData> cashierTxnTypeTotals = this.jdbcTemplate.query(sql, ctsm, // NOSONAR
+                new Object[] { cashierId, currencyCode, cashierId, currencyCode, cashierId, currencyCode, cashierId, currencyCode });
+
+        Iterator<CashierTransactionTypeTotalsData> itr = cashierTxnTypeTotals.iterator();
+        BigDecimal allocAmount = new BigDecimal(0);
+        BigDecimal settleAmount = new BigDecimal(0);
+
+        while (itr.hasNext()) {
+            CashierTransactionTypeTotalsData total = itr.next();
+            if (total != null) {
+                if (total.getCashierTxnType().equals(CashierTxnType.ALLOCATE.getId())) {
+                    allocAmount = total.getCashTotal();
+                } else if (total.getCashierTxnType().equals(CashierTxnType.SETTLE.getId())) {
+                    settleAmount = total.getCashTotal();
+            }
+          }
+        }
+
+        return new BigDecimal[] { allocAmount, settleAmount };
+    }
+    
 
     @Override
     public Page<CashierTransactionData> retrieveCashierTransactions(final Long cashierId, final boolean includeAllTellers,

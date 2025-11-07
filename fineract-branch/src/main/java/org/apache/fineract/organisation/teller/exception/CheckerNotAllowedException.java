@@ -17,11 +17,17 @@
  * under the License.
  */
 //Yves FOPA 04/11/2025
-package org.apache.fineract.useradministration.exception;
+package org.apache.fineract.organisation.teller.exception;
 
-public class CheckerNotAllowedException extends RuntimeException {
-    
-        public CheckerNotAllowedException (String message) {
-        super (message);
+import org.apache.fineract.infrastructure.core.exception.AbstractPlatformDomainRuleException;
+
+public class CheckerNotAllowedException extends AbstractPlatformDomainRuleException {
+
+    private static final String ERROR_MESSAGE_CODE = "error.msg.checked.not.allowed"; //this code is sent back to front end app for error display
+    private static final String DEFAULT_ERROR_MESSAGE = "You are not allowed to validate this action !";
+
+    public CheckerNotAllowedException() {
+        super(ERROR_MESSAGE_CODE,DEFAULT_ERROR_MESSAGE);
     }
+
 }

@@ -37,6 +37,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -330,7 +332,7 @@ public class TellerApiResource {
                 .sortOrder(sortOrder).build();
 
         return this.readPlatformService.retrieveCashierTransactionsWithSummary(cashierId, false, null, null, currencyCode,
-                searchParameters);
+                searchParameters, tellerId); //Yves FOPA - 07/11/2025, added tellerId
     }
 
     @GET
