@@ -33,6 +33,7 @@ import org.apache.fineract.infrastructure.core.service.SearchParameters;
 import org.apache.fineract.infrastructure.core.service.database.DatabaseSpecificSQLGenerator;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.infrastructure.security.service.SqlValidator;
+import org.apache.fineract.infrastructure.security.service.TwoFactorService;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.organisation.office.data.OfficeData;
@@ -47,8 +48,10 @@ import org.apache.fineract.organisation.teller.data.CashierTransactionsWithSumma
 import org.apache.fineract.organisation.teller.data.TellerData;
 import org.apache.fineract.organisation.teller.data.TellerJournalData;
 import org.apache.fineract.organisation.teller.data.TellerTransactionData;
+import org.apache.fineract.organisation.teller.domain.Cashier;
 import org.apache.fineract.organisation.teller.domain.CashierTxnType;
 import org.apache.fineract.organisation.teller.domain.TellerStatus;
+import org.apache.fineract.organisation.teller.exception.CashierNotFoundException;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -58,6 +61,8 @@ import org.springframework.util.CollectionUtils;
 
 import org.apache.fineract.organisation.teller.service.TellerManagementReadPlatformService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.organisation.teller.domain.CashierRepository;
+import org.springframework.context.ApplicationContext;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -71,9 +76,8 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
     private final DatabaseSpecificSQLGenerator sqlGenerator;
     private final PaginationHelper paginationHelper;
     private final SqlValidator sqlValidator;
-
+    private static ApplicationContext applicationContext;    
     
-    private final TellerManagementReadPlatformService readPlatformService;
 
     private static final class TellerMapper implements RowMapper<TellerData> {
 
@@ -275,7 +279,7 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
 
     @Override
     public CashierTransactionsWithSummaryData retrieveCashierTransactionsWithSummary(final Long cashierId, final boolean includeAllTellers,
-            final LocalDate fromDate, final LocalDate toDate, final String currencyCode, final SearchParameters searchParameters, final Long tellerId) {
+            final LocalDate fromDate, final LocalDate toDate, final String currencyCode, final SearchParameters searchParameters) {
 
         sqlValidator.validate(searchParameters.getOrderBy());
         sqlValidator.validate(searchParameters.getSortOrder());
@@ -312,7 +316,9 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
         for each cashier, get alloc and settle
         do total settle - total alloc to have vault balance
         */ 
-        final Collection<CashierData> cashiers = this.readPlatformService.getCashiersForTeller(tellerId, fromDate, toDate);
+        CashierRepository  cashierRepository  = applicationContext.getBean(CashierRepository .class);   
+        final Cashier selectedcashier = cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
+        final Collection<CashierData> cashiers = this.getCashiersForTeller(selectedcashier.getTeller().getId(), fromDate, toDate);
 
         BigDecimal mainvaultbalance = new BigDecimal(0);
         BigDecimal totalcashalloc = new BigDecimal(0);
@@ -322,10 +328,10 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
             BigDecimal[] amounts = retrieveCashierTransactionsAllocationSettle(cashier.getId(), includeAllTellers,
             fromDate, toDate, currencyCode, searchParameters);
             totalcashalloc = totalcashalloc.add(amounts[0]);
-            totalcashsettle = totalcashsettle.add(amounts[1]);
+            totalcashsettle = totalcashsettle.add(amounts[1]); 
         }
         mainvaultbalance = totalcashsettle.subtract(totalcashalloc);
-        log.debug("ORIZON Teller Main Vaul Balance", mainvaultbalance);
+        log.debug("ORIZON Teller Main Vault Balance", mainvaultbalance);
         //end of Yves FOPA changes
         
         final Page<CashierTransactionData> cashierTransactions = retrieveCashierTransactions(cashierId, includeAllTellers, fromDate, toDate,

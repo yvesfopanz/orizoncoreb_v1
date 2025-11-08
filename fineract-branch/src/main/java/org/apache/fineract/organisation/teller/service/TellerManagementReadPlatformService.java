@@ -59,6 +59,6 @@ public interface TellerManagementReadPlatformService {
             LocalDate toDate, String currencyCode, SearchParameters searchParameters);
 
     CashierTransactionsWithSummaryData retrieveCashierTransactionsWithSummary(Long cashierId, boolean includeAllTellers, LocalDate fromDate,
-            LocalDate toDate, String currencyCode, SearchParameters searchParameters, Long tellerId); //Yves FOPA 07/11/2025, added tellerId
+            LocalDate toDate, String currencyCode, SearchParameters searchParameters); 
 
 }

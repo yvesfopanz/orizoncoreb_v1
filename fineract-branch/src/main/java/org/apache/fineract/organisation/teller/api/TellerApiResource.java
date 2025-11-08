@@ -332,7 +332,7 @@ public class TellerApiResource {
                 .sortOrder(sortOrder).build();
 
         return this.readPlatformService.retrieveCashierTransactionsWithSummary(cashierId, false, null, null, currencyCode,
-                searchParameters, tellerId); //Yves FOPA - 07/11/2025, added tellerId
+                searchParameters); 
     }
 
     @GET
