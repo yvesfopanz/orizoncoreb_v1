@@ -34,12 +34,13 @@ public final class CashierTransactionsWithSummaryData implements Serializable {
     private final String tellerName;
     private final long cashierId;
     private final String cashierName;
+    private final BigDecimal mainVaultCashBalance;
 
     private final Page<CashierTransactionData> cashierTransactions;
 
     private CashierTransactionsWithSummaryData(final Page<CashierTransactionData> cashierTransactions, final BigDecimal sumCashAllocation,
             final BigDecimal sumInwardCash, final BigDecimal sumOutwardCash, final BigDecimal sumCashSettlement, final BigDecimal netCash,
-            final String officeName, final Long tellerId, final String tellerName, final Long cashierId, final String cashierName) {
+            final String officeName, final Long tellerId, final String tellerName, final Long cashierId, final String cashierName, final BigDecimal mainVaultCashBalance) {
         this.cashierTransactions = cashierTransactions;
         this.sumCashAllocation = sumCashAllocation;
         this.sumInwardCash = sumInwardCash;
@@ -51,16 +52,17 @@ public final class CashierTransactionsWithSummaryData implements Serializable {
         this.tellerName = tellerName;
         this.cashierId = cashierId;
         this.cashierName = cashierName;
+        this.mainVaultCashBalance = mainVaultCashBalance;
     }
 
     public static CashierTransactionsWithSummaryData instance(final Page<CashierTransactionData> cashierTransactions,
             final BigDecimal sumCashAllocation, final BigDecimal sumInwardCash, final BigDecimal sumOutwardCash,
             final BigDecimal sumCashSettlement, final String officeName, final Long tellerId, final String tellerName, final Long cashierId,
-            final String cashierName) {
+            final String cashierName, final BigDecimal mainVaultCashBalance) {
 
         final BigDecimal netCash = sumCashAllocation.add(sumInwardCash).subtract(sumOutwardCash).subtract(sumCashSettlement);
         return new CashierTransactionsWithSummaryData(cashierTransactions, sumCashAllocation, sumInwardCash, sumOutwardCash,
-                sumCashSettlement, netCash, officeName, tellerId, tellerName, cashierId, cashierName);
+                sumCashSettlement, netCash, officeName, tellerId, tellerName, cashierId, cashierName, mainVaultCashBalance);
     }
 
     public BigDecimal getSumCashAllocation() {
@@ -101,6 +103,10 @@ public final class CashierTransactionsWithSummaryData implements Serializable {
 
     public String getCashierName() {
         return cashierName;
+    }
+
+    public BigDecimal getMainVaultCashBalance() {
+        return mainVaultCashBalance;
     }
 
     public Page<CashierTransactionData> getCashierTransactions() {

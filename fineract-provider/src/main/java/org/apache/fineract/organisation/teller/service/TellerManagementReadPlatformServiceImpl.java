@@ -335,7 +335,7 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
             totalcashsettle = totalcashsettle.add(amounts[1]); 
         }
         mainvaultbalance = totalcashsettle.subtract(totalcashalloc);
-        log.debug("ORIZON Teller Main Vault Balance", mainvaultbalance);
+        log.info("ORIZON Teller Main Vault Balance", mainvaultbalance);
         //end of Yves FOPA changes
         
         final Page<CashierTransactionData> cashierTransactions = retrieveCashierTransactions(cashierId, includeAllTellers, fromDate, toDate,
@@ -345,7 +345,7 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
 
         CashierTransactionsWithSummaryData txnsWithSummary = CashierTransactionsWithSummaryData.instance(cashierTransactions, allocAmount,
                 cashInAmount, cashOutAmount, settleAmount, cashierTxnTemplate.getOfficeName(), cashierTxnTemplate.getTellerId(),
-                cashierTxnTemplate.getTellerName(), cashierTxnTemplate.getCashierId(), cashierTxnTemplate.getCashierName());
+                cashierTxnTemplate.getTellerName(), cashierTxnTemplate.getCashierId(), cashierTxnTemplate.getCashierName(), mainvaultbalance);
         return txnsWithSummary;
     }
 
