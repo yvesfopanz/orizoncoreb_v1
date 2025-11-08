@@ -53,6 +53,7 @@ import org.apache.fineract.organisation.teller.domain.CashierTxnType;
 import org.apache.fineract.organisation.teller.domain.TellerStatus;
 import org.apache.fineract.organisation.teller.exception.CashierNotFoundException;
 import org.apache.fineract.useradministration.domain.AppUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -76,7 +77,9 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
     private final DatabaseSpecificSQLGenerator sqlGenerator;
     private final PaginationHelper paginationHelper;
     private final SqlValidator sqlValidator;
-    private static ApplicationContext applicationContext;    
+    //private static ApplicationContext applicationContext;
+    @Autowired
+    private ApplicationContext applicationContext;    
     
 
     private static final class TellerMapper implements RowMapper<TellerData> {
@@ -316,7 +319,8 @@ public class TellerManagementReadPlatformServiceImpl implements TellerManagement
         for each cashier, get alloc and settle
         do total settle - total alloc to have vault balance
         */ 
-        CashierRepository  cashierRepository  = applicationContext.getBean(CashierRepository .class);   
+        
+        CashierRepository  cashierRepository  = this.applicationContext.getBean(CashierRepository.class);   
         final Cashier selectedcashier = cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
         final Collection<CashierData> cashiers = this.getCashiersForTeller(selectedcashier.getTeller().getId(), fromDate, toDate);
 
