@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.organisation.teller.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import org.apache.fineract.infrastructure.core.service.Page;
@@ -61,4 +62,7 @@ public interface TellerManagementReadPlatformService {
     CashierTransactionsWithSummaryData retrieveCashierTransactionsWithSummary(Long cashierId, boolean includeAllTellers, LocalDate fromDate,
             LocalDate toDate, String currencyCode, SearchParameters searchParameters); 
 
+    //Yves FOPA 09/11/2025
+    BigDecimal tellerMainVaultBalance(final Long cashierId, final boolean includeAllTellers,
+            final LocalDate fromDate, final LocalDate toDate, final String currencyCode); 
 }

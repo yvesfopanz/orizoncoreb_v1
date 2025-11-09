@@ -64,8 +64,10 @@ import org.apache.fineract.organisation.teller.domain.model.request.CashierReque
 import org.apache.fineract.organisation.teller.domain.model.request.CashierTransactionRequest;
 import org.apache.fineract.organisation.teller.domain.model.request.TellerRequest;
 import org.apache.fineract.organisation.teller.exception.CashierNotFoundException;
+import org.apache.fineract.organisation.teller.exception.TellerMainVaultInsufficientBalanceException;
 import org.apache.fineract.organisation.teller.service.TellerManagementReadPlatformService;
 import org.apache.fineract.organisation.teller.util.DateRange;
+import org.checkerframework.checker.units.qual.m;
 import org.springframework.stereotype.Component;
 import org.apache.fineract.organisation.teller.domain.Cashier;
 import org.apache.fineract.organisation.teller.domain.CashierRepository;
@@ -252,13 +254,21 @@ public class TellerApiResource {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = TellerApiResourceSwagger.PostTellersTellerIdCashiersCashierIdAllocateResponse.class))) })
     public CommandProcessingResult allocateCashToCashier(@PathParam("tellerId") @Parameter(description = "tellerId") final Long tellerId,
             @PathParam("cashierId") @Parameter(description = "cashierId") final Long cashierId,
-            @Parameter(hidden = true) CashierTransactionRequest cashierTxnData) {
+            @Parameter(hidden = true) CashierTransactionRequest cashierTxnData) { 
 
                 //Yves FOPA 03 Nov 2025 - add officeID to be stored with 'ALLOCATECASHTOCASHIER' in m_portfolio_command_source table 
                 final Cashier cashier = this.cashierRepository.findById(cashierId).orElseThrow(() -> new CashierNotFoundException(cashierId));
                 log.debug("ORIZON {}", cashier);
                 final Long officeId = cashier.getStaff().officeId();
                 final Long checkerId = cashier.getStaff().getId();
+
+                //Yves FOPA 09/11/2025, check allocate amount is not over main vault cash balance
+                BigDecimal mainvaultbalance = new BigDecimal(0);
+                mainvaultbalance = readPlatformService.tellerMainVaultBalance(cashierId, false, null, null, cashierTxnData.currencyCode);
+                if (cashierTxnData.txnAmount != null && mainvaultbalance != null && cashierTxnData.txnAmount.compareTo(mainvaultbalance) > 0) {
+                        throw new TellerMainVaultInsufficientBalanceException();
+                }
+
 
         final CommandWrapper request = new CommandWrapperBuilder().allocateCashToCashier(tellerId, cashierId, officeId, checkerId)
                 .withJson(apiJsonSerializer.serialize(cashierTxnData)).build();
